@@ -110,7 +110,9 @@ allowed = function(url, parenturl)
     or string.match(url, "^https?://www%.googletagmanager%.com")
     or string.match(url, "^https?://supermariomakerbookmark%.nintendo%.net/users/") -- Auth
     or string.match(url, "^https?://supermariomakerbookmark%.nintendo%.net/assets/") -- Static
-    or string.match(url, "^https?://www%.esrb%.org/") then
+    or string.match(url, "^https?://www%.esrb%.org/")
+    or string.match(url, "^https?://www.w3.org")
+    or string.match(url, "^https?://w3.org") then
     return false
   end
 
@@ -141,6 +143,7 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
   end
   if allowed(url, parent["url"]) then
     addedtolist[url] = true
+    print_debug("Derived " .. url .. " from " .. parent["url"] .. " in dcp")
     return true
   end
 
@@ -243,13 +246,15 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
 
   -- Queue alternate profile picture types
   if string.match(url, "https?://mii%-secure%.cdn%.nintendo%.net/.*png$") then
-    check((string.gsub(url, "normal", "like")))
-    check((string.gsub(url, "like", "normal")))
+    p_assert(string.match(url, "normal_face%.png$") or string.match(url, "like_face%.png$"))
+    check((string.gsub(url, "normal_face%.png$", "like_face%.png")))
+    check((string.gsub(url, "like_face%.png$", "normal_face%.png")))
     print_debug("Queuing alternate face from " .. url)
   end
 
   if status_code == 200 and not (string.match(url, "jpe?g$") or string.match(url, "png$")) then
     load_html()
+    html = string.gsub(html, '<div class="course%-title">.-</div>', '') -- Strip out these, no real URLS and have punctuation
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
       checknewurl(newurl)
     end
@@ -270,6 +275,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     end
   end
 
+  for _, urll in pairs(urls) do
+    print_debug("Derived " .. urll.url .. " from " .. url .. " in gu")
+  end
   return urls
 end
 
