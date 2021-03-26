@@ -348,7 +348,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   local url_is_essential = false
 
   if status_code == 0
-    or (status_code >= 400 and status_code ~= 404) then
+    or (status_code >= 300 and status_code ~= 404) then
     io.stdout:write("Server returned " .. http_stat.statcode .. " (" .. err .. "). Sleeping.\n")
     io.stdout:flush()
     do_retry = true
